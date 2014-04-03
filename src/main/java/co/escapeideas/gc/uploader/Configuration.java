@@ -16,4 +16,10 @@ public interface Configuration {
     String getAcceptableExtensions();
 
     String getNewDirectory();
+
+    String getCompleteDirectory();
+
+    String getErrorDirectory();
+
+    Integer getCheckInterval();
 }

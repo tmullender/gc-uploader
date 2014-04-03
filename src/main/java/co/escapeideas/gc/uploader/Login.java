@@ -6,17 +6,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Console;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +26,7 @@ import java.util.regex.Pattern;
  */
 public class Login {
 
-    private static final Logger logger = Logger.getLogger(Login.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Login.class);
 
     private static final String SSO_PAGE = "https://sso.garmin.com/sso/login";
     private static final String POST_AUTH_PAGE = "http://connect.garmin.com/post-auth/login";
@@ -45,7 +42,7 @@ public class Login {
 
     public void login(String username, String password) throws LoginException {
         if (StringUtils.isEmpty(username)){
-            logger.warning("Username is empty");
+            logger.warn("Username is empty");
         } else {
             final String ssoPage = getSSOPage();
             final String loginPage = postSSOUsernameAndPassword(username, password, getLT(ssoPage));
@@ -57,22 +54,23 @@ public class Login {
     }
 
     private String getSSOPage() throws LoginException {
-        return getPage("getSSOPage: ", SSO_PAGE, getSSOParameters());
+        return getPage(SSO_PAGE, getSSOParameters());
     }
 
     private Header getPostAuth(String ticket) throws LoginException {
         final Map<String, String> params = new HashMap<String, String>(1);
         params.put("ticket", ticket);
-        final HttpResponse httpResponse = get("getPostAuthPage: ", POST_AUTH_PAGE, params);
+        final HttpResponse httpResponse = get(POST_AUTH_PAGE, params);
         return httpResponse.getFirstHeader("location");
     }
 
     private void getPostAuthRedirect(String location) throws LoginException {
-        get("getPostAuthRedirect: ", location, Collections.<String, String>emptyMap());
+        get(location, Collections.<String, String>emptyMap());
     }
 
     private String getTicket(String loginPage) {
         final Matcher matcher = TICKET_VALUE.matcher(loginPage);
+        logger.debug("Getting ticket from: {}", loginPage);
         if (matcher.find()) {
             return matcher.group(1);
         }
@@ -81,6 +79,7 @@ public class Login {
 
     private String getLT(String ssoPage) {
         final Matcher matcher = LT_VALUE.matcher(ssoPage);
+        logger.debug("Getting lt from: {}", ssoPage);
         if (matcher.find()){
             return matcher.group(1);
         }
@@ -95,15 +94,17 @@ public class Login {
         return params;
     }
 
-    private String getPage(String logMessage, String url, Map<String, String> params) throws LoginException {
+    private String getPage(String url, Map<String, String> params) throws LoginException {
         try {
-            return EntityUtils.toString(get(logMessage, url, params).getEntity());
+            final HttpResponse httpResponse = get(url, params);
+            return EntityUtils.toString(httpResponse.getEntity());
         } catch (IOException e) {
             throw new LoginException("Error converting page to string", e);
         }
     }
 
-    private HttpResponse get(String logMessage, String url, Map<String, String> params) throws LoginException {
+    private HttpResponse get(String url, Map<String, String> params) throws LoginException {
+        logger.debug("get {} with {}", url, params);
         try {
             final RequestBuilder requestBuilder = RequestBuilder.get().setUri(url);
             for (Map.Entry<String, String> entry : params.entrySet()){
@@ -111,7 +112,7 @@ public class Login {
             }
             final HttpUriRequest request = requestBuilder.build();
             final HttpResponse response = httpClient.execute(request);
-            logger.info(logMessage + response);
+            logger.info("get response {}", response);
             return response;
         } catch (IOException e) {
             throw new LoginException("Error getting homepage", e);
@@ -126,10 +127,11 @@ public class Login {
         params.put("_eventId", "submit");
         params.put("embed", "true");
         params.put("lt", lt);
-        return postPage("postSSOUsernameAndPassword: ", SSO_PAGE, params);
+        return postPage(SSO_PAGE, params);
     }
 
-    private String postPage(String logMessage, String url, Map<String, String> params) throws LoginException {
+    private String postPage(String url, Map<String, String> params) throws LoginException {
+        logger.debug("post {} with {}", url, params);
         try {
             final RequestBuilder requestBuilder = RequestBuilder.post().setUri(url);
             for (Map.Entry<String, String> entry : params.entrySet()){
@@ -137,7 +139,7 @@ public class Login {
             }
             final HttpUriRequest request = requestBuilder.build();
             final HttpResponse response = httpClient.execute(request);
-            logger.info(logMessage + response);
+            logger.info("post response {}",  response);
             return EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
             throw new LoginException("Error getting homepage", e);

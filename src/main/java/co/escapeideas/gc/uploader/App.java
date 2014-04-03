@@ -3,12 +3,13 @@ package co.escapeideas.gc.uploader;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class App implements Runnable{
 
-    private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     private final Login login;
     private final Uploader uploader;
@@ -30,7 +31,7 @@ public class App implements Runnable{
         this.configuration = configuration;
         final CloseableHttpClient httpClient = createClient();
         login = new Login(httpClient);
-        uploader = new Uploader(httpClient);
+        uploader = new Uploader(configuration, httpClient);
         watcher = new Watcher(configuration);
     }
 
@@ -47,14 +48,16 @@ public class App implements Runnable{
                 uploader.upload(file);
             }
         } catch (Exception e) {
-            logger.throwing(App.class.getName(), "run", e);
+            logger.error("run", e);
         }
         logger.info("Run complete");
     }
 
     public void start() {
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleWithFixedDelay(this, 0, 1, TimeUnit.MINUTES);
+        final Integer interval = configuration.getCheckInterval();
+        logger.info("Starting, interval: {}", interval);
+        scheduledExecutorService.scheduleWithFixedDelay(this, 0, interval, TimeUnit.MINUTES);
     }
 
     public static void main(String... args){
@@ -62,7 +65,7 @@ public class App implements Runnable{
         if (args.length > 0){
             path = args[0];
         } else {
-            path = "~/.gc-uploader.properties";
+            path = PropertiesConfiguration.DEFAULT_APPLICATION_DIRECTORY + "config.properties";
         }
         createApp(path).start();
     }

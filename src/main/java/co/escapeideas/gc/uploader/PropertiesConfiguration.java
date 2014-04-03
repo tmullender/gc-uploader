@@ -1,11 +1,13 @@
 package co.escapeideas.gc.uploader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,11 +18,17 @@ import java.util.logging.Logger;
  */
 public class PropertiesConfiguration implements Configuration {
 
-    private static final Logger logger = Logger.getLogger(PropertiesConfiguration.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesConfiguration.class);
+    public static final String DEFAULT_APPLICATION_DIRECTORY = System.getProperty("user.home") + "/.gc-uploader/";
+
     private static final String USERNAME_KEY = "username";
     private static final String PASSWORD_KEY = "password";
     private static final String ACCEPTABLE_EXTENSIONS = "acceptable.extensions";
     private static final String NEW_DIRECTORY = "upload.new.directory";
+    private static final String COMPLETE_DIRECTORY = "upload.complete.directory";
+    private static final String ERROR_DIRECTORY = "upload.error.directory";
+    private static final String CHECK_INTERVAL = "new.file.check.interval";
+    private static final Integer DEFAULT_CHECK_INTERVAL = 5;
 
     private final Properties properties;
 
@@ -33,14 +41,17 @@ public class PropertiesConfiguration implements Configuration {
         try {
             properties.load(new FileInputStream(file));
         } catch (IOException e) {
-            logger.throwing(PropertiesConfiguration.class.getName(), "init", e);
+            logger.error("init", e);
         }
     }
 
     private Properties createDefaults() {
         final Properties properties = new Properties();
         properties.setProperty(ACCEPTABLE_EXTENSIONS, "fit,gtx,tcx");
-        properties.setProperty(NEW_DIRECTORY, System.getProperty("user.home") + "/.gc-uploader/new");
+        properties.setProperty(NEW_DIRECTORY, DEFAULT_APPLICATION_DIRECTORY + "new");
+        properties.setProperty(COMPLETE_DIRECTORY, DEFAULT_APPLICATION_DIRECTORY + "complete");
+        properties.setProperty(ERROR_DIRECTORY, DEFAULT_APPLICATION_DIRECTORY + "error");
+        properties.setProperty(CHECK_INTERVAL, String.valueOf(DEFAULT_CHECK_INTERVAL));
         return properties;
     }
 
@@ -72,5 +83,25 @@ public class PropertiesConfiguration implements Configuration {
     @Override
     public String getNewDirectory() {
         return getProperty(NEW_DIRECTORY);
+    }
+
+    @Override
+    public String getCompleteDirectory() {
+        return getProperty(COMPLETE_DIRECTORY);
+    }
+
+    @Override
+    public String getErrorDirectory() {
+        return getProperty(ERROR_DIRECTORY);
+    }
+
+    @Override
+    public Integer getCheckInterval() {
+        try {
+            return Integer.valueOf(getProperty(CHECK_INTERVAL));
+        } catch (Exception e) {
+            logger.error("getCheckInterval", e);
+            return DEFAULT_CHECK_INTERVAL;
+        }
     }
 }
