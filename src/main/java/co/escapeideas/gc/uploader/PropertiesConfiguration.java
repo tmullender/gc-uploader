@@ -1,13 +1,13 @@
 package co.escapeideas.gc.uploader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,10 +38,16 @@ public class PropertiesConfiguration implements Configuration {
 
     public PropertiesConfiguration(File file) {
         this();
-        try {
-            properties.load(new FileInputStream(file));
-        } catch (IOException e) {
-            logger.error("init", e);
+        loadProperties(file);
+    }
+
+    private void loadProperties(final File file) {
+        if (file != null && file.exists()) {
+            try {
+                properties.load(new FileInputStream(file));
+            } catch (IOException e) {
+                logger.error("init", e);
+            }
         }
     }
 
@@ -71,7 +77,9 @@ public class PropertiesConfiguration implements Configuration {
         while (password == null && console != null) {
             password = new String(console.readPassword("Password: "));
         }
-        properties.setProperty(PASSWORD_KEY, password);
+        if (password != null){
+            properties.setProperty(PASSWORD_KEY, password);
+        }
         return password;
     }
 

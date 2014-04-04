@@ -1,21 +1,23 @@
 package co.escapeideas.gc.uploader;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,17 +37,30 @@ public class Login {
     private static final Pattern TICKET_VALUE = Pattern.compile(".*ticket=([^']+)'");
 
     private final HttpClient httpClient;
+    private final ResponseHandler<String> responseHandler;
 
     public Login(HttpClient httpClient) {
         this.httpClient = httpClient;
+        responseHandler = new BasicResponseHandler();
     }
 
     public void login(String username, String password) throws LoginException {
-        if (StringUtils.isEmpty(username)){
-            logger.warn("Username is empty");
+        if (StringUtils.isEmpty(username) || password == null){
+            logger.warn("Username is empty or password is not set");
         } else {
+            logger.info("logging in");
             final String ssoPage = getSSOPage();
-            final String loginPage = postSSOUsernameAndPassword(username, password, getLT(ssoPage));
+            final String lt = getLT(ssoPage);
+            login(username, password, lt);
+            logger.info("logged in");
+        }
+    }
+
+    private void login(final String username, final String password, final String lt) throws LoginException {
+        if (lt == null){
+            logger.debug("Unable to login, already logged in?");
+        } else {
+            final String loginPage = postSSOUsernameAndPassword(username, password, lt);
             final Header location = getPostAuth(getTicket(loginPage));
             if (location != null){
                 getPostAuthRedirect(location.getValue());
@@ -83,7 +98,7 @@ public class Login {
         if (matcher.find()){
             return matcher.group(1);
         }
-        return "";
+        return null;
     }
 
     private Map<String, String> getSSOParameters() {
@@ -112,10 +127,10 @@ public class Login {
             }
             final HttpUriRequest request = requestBuilder.build();
             final HttpResponse response = httpClient.execute(request);
-            logger.info("get response {}", response);
+            logger.debug("get response {}", response);
             return response;
         } catch (IOException e) {
-            throw new LoginException("Error getting homepage", e);
+            throw new LoginException("Error getting url", e);
         }
     }
 
@@ -131,7 +146,7 @@ public class Login {
     }
 
     private String postPage(String url, Map<String, String> params) throws LoginException {
-        logger.debug("post {} with {}", url, params);
+        logger.debug("post {}", url);
         try {
             final RequestBuilder requestBuilder = RequestBuilder.post().setUri(url);
             for (Map.Entry<String, String> entry : params.entrySet()){
@@ -139,10 +154,10 @@ public class Login {
             }
             final HttpUriRequest request = requestBuilder.build();
             final HttpResponse response = httpClient.execute(request);
-            logger.info("post response {}",  response);
-            return EntityUtils.toString(response.getEntity());
+            logger.debug("post response {}",  response);
+            return responseHandler.handleResponse(response);
         } catch (IOException e) {
-            throw new LoginException("Error getting homepage", e);
+            throw new LoginException("Error posting to url", e);
         }
     }
 

@@ -1,15 +1,15 @@
 package co.escapeideas.gc.uploader;
 
+import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -43,9 +43,12 @@ public class App implements Runnable{
     public void run() {
         logger.info("Running");
         try {
-            login.login(configuration.getUsername(), configuration.getPassword());
-            for (File file : watcher.findNewFiles()){
-                uploader.upload(file);
+            final File[] newFiles = watcher.findNewFiles();
+            if (newFiles.length > 0) {
+                login.login(configuration.getUsername(), configuration.getPassword());
+                for (File file : newFiles){
+                    uploader.upload(file);
+                }
             }
         } catch (Exception e) {
             logger.error("run", e);
@@ -55,9 +58,13 @@ public class App implements Runnable{
 
     public void start() {
         final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        final Integer interval = configuration.getCheckInterval();
-        logger.info("Starting, interval: {}", interval);
-        scheduledExecutorService.scheduleWithFixedDelay(this, 0, interval, TimeUnit.MINUTES);
+        if (configuration.getPassword() == null){
+            logger.error("No password has been provided, skipping start");
+        } else {
+            final Integer interval = configuration.getCheckInterval();
+            logger.info("Starting, interval: {}", interval);
+            scheduledExecutorService.scheduleWithFixedDelay(this, 0, interval, TimeUnit.MINUTES);
+        }
     }
 
     public static void main(String... args){
