@@ -5,8 +5,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
  * User: tmullender
  * Date: 31/03/14
  * Time: 23:32
- * To change this template use File | Settings | File Templates.
  */
 public class App implements Runnable{
 
@@ -29,14 +29,21 @@ public class App implements Runnable{
 
     public App(Configuration configuration) {
         this.configuration = configuration;
-        final CloseableHttpClient httpClient = createClient();
+        final HttpClient httpClient = createClient(configuration);
         login = new Login(httpClient);
         uploader = new Uploader(configuration, httpClient);
         watcher = new Watcher(configuration);
     }
 
-    private CloseableHttpClient createClient() {
-        return HttpClients.custom().setDefaultCookieStore(new BasicCookieStore()).build();
+    private HttpClient createClient(Configuration configuration) {
+        final RequestConfig config = RequestConfig.custom()
+                .setCircularRedirectsAllowed(true)
+                .setConnectTimeout(configuration.getConnectTimeout())
+                .build();
+        return HttpClients.custom()
+                .setDefaultRequestConfig(config)
+                .setDefaultCookieStore(new BasicCookieStore())
+                .build();
     }
 
     @Override

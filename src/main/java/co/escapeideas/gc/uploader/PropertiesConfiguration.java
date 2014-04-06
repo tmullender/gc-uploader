@@ -28,7 +28,9 @@ public class PropertiesConfiguration implements Configuration {
     private static final String COMPLETE_DIRECTORY = "upload.complete.directory";
     private static final String ERROR_DIRECTORY = "upload.error.directory";
     private static final String CHECK_INTERVAL = "new.file.check.interval";
+    private static final String CONNECT_TIMEOUT = "http.connect.timeout";
     private static final Integer DEFAULT_CHECK_INTERVAL = 5;
+    private static final Integer DEFAULT_CONNECT_TIMEOUT = 30000;
 
     private final Properties properties;
 
@@ -103,13 +105,22 @@ public class PropertiesConfiguration implements Configuration {
         return getProperty(ERROR_DIRECTORY);
     }
 
+    private Integer getInteger(String property, Integer defaultValue) {
+        try {
+            return Integer.valueOf(getProperty(property));
+        } catch (Exception e) {
+            logger.error("getInteger", e);
+            return defaultValue;
+        }
+    }
+
     @Override
     public Integer getCheckInterval() {
-        try {
-            return Integer.valueOf(getProperty(CHECK_INTERVAL));
-        } catch (Exception e) {
-            logger.error("getCheckInterval", e);
-            return DEFAULT_CHECK_INTERVAL;
-        }
+        return getInteger(CHECK_INTERVAL,DEFAULT_CHECK_INTERVAL);
+    }
+
+    @Override
+    public Integer getConnectTimeout() {
+        return getInteger(CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
     }
 }

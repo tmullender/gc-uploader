@@ -22,4 +22,6 @@ public interface Configuration {
     String getErrorDirectory();
 
     Integer getCheckInterval();
+
+    Integer getConnectTimeout();
 }
