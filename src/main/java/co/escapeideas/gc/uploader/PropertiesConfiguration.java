@@ -60,6 +60,7 @@ public class PropertiesConfiguration implements Configuration {
         properties.setProperty(COMPLETE_DIRECTORY, DEFAULT_APPLICATION_DIRECTORY + "complete");
         properties.setProperty(ERROR_DIRECTORY, DEFAULT_APPLICATION_DIRECTORY + "error");
         properties.setProperty(CHECK_INTERVAL, String.valueOf(DEFAULT_CHECK_INTERVAL));
+        properties.setProperty(CONNECT_TIMEOUT, String.valueOf(DEFAULT_CONNECT_TIMEOUT));
         return properties;
     }
 
