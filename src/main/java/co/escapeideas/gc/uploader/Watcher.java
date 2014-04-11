@@ -1,10 +1,6 @@
 package co.escapeideas.gc.uploader;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +12,6 @@ import static org.apache.commons.io.FilenameUtils.getExtension;
  * User: tmullender
  * Date: 01/04/14
  * Time: 23:04
- * To change this template use File | Settings | File Templates.
  */
 public class Watcher {
     private final List<String> accepetedExtensions;

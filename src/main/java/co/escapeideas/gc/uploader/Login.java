@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory;
  * User: tmullender
  * Date: 31/03/14
  * Time: 23:32
- * To change this template use File | Settings | File Templates.
  */
 public class Login {
 
@@ -36,10 +34,10 @@ public class Login {
     private static final Pattern LT_VALUE = Pattern.compile(".*name=[\"']?lt[\"']?\\s+value=[\"']?(\\w*)[\"']?.*");
     private static final Pattern TICKET_VALUE = Pattern.compile(".*ticket=([^']+)'");
 
-    private final HttpClient httpClient;
+    private final HTTPClient httpClient;
     private final ResponseHandler<String> responseHandler;
 
-    public Login(HttpClient httpClient) {
+    public Login(HTTPClient httpClient) {
         this.httpClient = httpClient;
         responseHandler = new BasicResponseHandler();
     }
@@ -49,6 +47,7 @@ public class Login {
             logger.warn("Username is empty or password is not set");
         } else {
             logger.info("logging in");
+            httpClient.clearCookies();
             final String ssoPage = getSSOPage();
             final String lt = getLT(ssoPage);
             login(username, password, lt);

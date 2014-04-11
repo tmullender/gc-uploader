@@ -5,10 +5,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,24 +25,14 @@ public class App implements Runnable{
 
     public App(Configuration configuration) {
         this.configuration = configuration;
-        final HttpClient httpClient = createClient(configuration);
+        final HTTPClient httpClient = createClient(configuration);
         login = new Login(httpClient);
         uploader = new Uploader(configuration, httpClient);
         watcher = new Watcher(configuration);
     }
 
-    private HttpClient createClient(Configuration configuration) {
-        final RequestConfig config = RequestConfig.custom()
-                .setCircularRedirectsAllowed(true)
-                .setConnectionRequestTimeout(configuration.getConnectTimeout())
-                .setConnectTimeout(configuration.getConnectTimeout())
-                .setSocketTimeout(configuration.getConnectTimeout())
-                .setStaleConnectionCheckEnabled(true)
-                .build();
-        return HttpClients.custom()
-                .setDefaultRequestConfig(config)
-                .setDefaultCookieStore(new BasicCookieStore())
-                .build();
+    private HTTPClient createClient(Configuration configuration) {
+        return new HTTPClient(configuration);
     }
 
     @Override
@@ -90,6 +76,5 @@ public class App implements Runnable{
     private static App createApp(String path) {
         return new App(new PropertiesConfiguration(new File(path)));
     }
-
 
 }

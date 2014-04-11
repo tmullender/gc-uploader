@@ -3,7 +3,6 @@ package co.escapeideas.gc.uploader;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -37,9 +36,9 @@ public class Uploader {
     private static final Pattern SUCCESS = Pattern.compile(".*\"code\":202,.*|.*\"failures\":\\[\\].*");
 
     private final Configuration configuration;
-    private final HttpClient httpClient;
+    private final HTTPClient httpClient;
 
-    public Uploader(Configuration configuration, HttpClient httpClient) {
+    public Uploader(Configuration configuration, HTTPClient httpClient) {
         this.configuration = configuration;
         this.httpClient = httpClient;
     }
