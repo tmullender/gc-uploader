@@ -38,7 +38,10 @@ public class App implements Runnable{
     private HttpClient createClient(Configuration configuration) {
         final RequestConfig config = RequestConfig.custom()
                 .setCircularRedirectsAllowed(true)
+                .setConnectionRequestTimeout(configuration.getConnectTimeout())
                 .setConnectTimeout(configuration.getConnectTimeout())
+                .setSocketTimeout(configuration.getConnectTimeout())
+                .setStaleConnectionCheckEnabled(true)
                 .build();
         return HttpClients.custom()
                 .setDefaultRequestConfig(config)
