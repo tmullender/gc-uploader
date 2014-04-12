@@ -75,11 +75,14 @@ public class Login {
         final Map<String, String> params = new HashMap<String, String>(1);
         params.put("ticket", ticket);
         final HttpResponse httpResponse = get(POST_AUTH_PAGE, params);
-        return httpResponse.getFirstHeader("location");
+        final Header location = httpResponse.getFirstHeader("location");
+        EntityUtils.consumeQuietly(httpResponse.getEntity());
+        return location;
     }
 
     private void getPostAuthRedirect(String location) throws LoginException {
-        get(location, Collections.<String, String>emptyMap());
+        final HttpResponse httpResponse = get(location, Collections.<String, String>emptyMap());
+        EntityUtils.consumeQuietly(httpResponse.getEntity());
     }
 
     private String getTicket(String loginPage) {

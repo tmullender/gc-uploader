@@ -81,12 +81,12 @@ public class Uploader {
     }
 
     private String upload(String url, File file) throws UploadException {
-        logger.debug("post {} with {}", url, file);
+        logger.info("post {} with {}", url, file);
         final HttpPost upload = new HttpPost(url);
         upload.setEntity(createEntity(file));
         try {
             final HttpResponse response = httpClient.execute(upload);
-            logger.info("response: {}", response);
+            logger.debug("response: {}", response);
             return EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
             throw new UploadException("Error in HTTP execute", e);
