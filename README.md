@@ -41,10 +41,9 @@ The app is configured using a properties file, an example is shown below with th
 The default location of the properties file, **config.properties**, is within _<User's home directory>_/gc-uploader
 
 |Property|Description|
-|:------------:|:-----------|
+|:------------:|:-----------:|
 |username|The username used to login to Garmin Connect, this is **mandatory**|
-|password|The password used to login to Garmin Connect, this will be prompted for if not specified assuming that a console is
-available.  As the properties file is plain text, it's access should be restricted if it contains a password|
+|password|The password used to login to Garmin Connect, this will be prompted for if not specified assuming that a console is available.  As the properties file is plain text, it's access should be restricted if it contains a password|
 |acceptable.extensions|The file extensions that represent files that should be uploaded to Garmin Connect|
 |upload.new.directory|The directory in which to look for new files|
 |upload.complete.directory|The directory to move files to once they have been successfully uploaded|
