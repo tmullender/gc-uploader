@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin:'application'
 
 sourceCompatibility = 1.7
-version = '0.1'
+version = '0.2-SNAPSHOT'
 mainClassName = 'co.escapeideas.gc.uploader.App'
 
 repositories {
@@ -16,3 +16,5 @@ dependencies {
   compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.3.3'
   compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.3.3'
 }
+
+applicationDistribution.from("README.md"){}

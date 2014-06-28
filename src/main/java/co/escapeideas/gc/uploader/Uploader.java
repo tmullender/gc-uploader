@@ -33,7 +33,7 @@ public class Uploader {
     private static final String RESPONSE_ID = "responseContentType";
     private static final ContentBody RESPONSE_TYPE = new StringBody("text/html", ContentType.TEXT_HTML);
 
-    private static final Pattern SUCCESS = Pattern.compile(".*\"code\":202,.*|.*\"failures\":\\[\\].*");
+    private static final Pattern SUCCESS = Pattern.compile(".*\"code\":202,.*|.*\"failures\":\\[\\s*\\].*");
 
     private final Configuration configuration;
     private final HTTPClient httpClient;
